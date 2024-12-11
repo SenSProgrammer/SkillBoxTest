@@ -1,0 +1,10 @@
+
+Урок 3.4 Как скачать шаблон проекта
+npx degit emirotin/node-template
+git init
+git add ./
+git commit "new project xxx"
+
+Урок 4.6 - запуск домашней работы в папке 04_hash
+node index.js /Users/myuser/work/skillbox/test.txt
+node index.js ../test.txt
