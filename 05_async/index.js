@@ -80,7 +80,7 @@ j++
 }
 
   function printPeapleMap() {
-   if (foundedPeapleMap[1])
+   if (foundedPeapleMap)
     {
    //В конце программы нужно собрать всех найденных персонажей и вывести о них следующую информацию:
    let i=0;
