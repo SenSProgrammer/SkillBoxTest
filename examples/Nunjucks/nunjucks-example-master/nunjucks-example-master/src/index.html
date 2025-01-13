@@ -1,0 +1,33 @@
+{% set title = "Home title" %}
+{% set pageName = "Home" %}
+{% set pageSlug  = "home" %}
+
+{% extends "layouts/default.html" %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer sit amet egestas sapien, nec ornare diam. Maecenas non arcu libero. Mauris eu leo efficitur, vehicula elit vitae, vulputate mauris. Vestibulum libero mi, iaculis et lorem id, tempus vehicula metus. Nullam ultrices nibh sem, id fermentum mi ullamcorper sit amet. Duis luctus sagittis metus, quis auctor libero semper non.</p>
+            <p>Etiam congue pharetra lorem in vulputate. Pellentesque pulvinar ligula vel fringilla consequat. Donec nec nisi elit. Vivamus varius est vel sodales consequat. Praesent et scelerisque eros.</p>
+        </div>
+
+        {{ macro.ItemList([
+            {
+                'title': 'Advantages #1',
+                'text': 'Advantages #1 text',
+                'url': 'Advantages_#1_url'
+            },
+            {
+                'title': 'Advantages #2',
+                'text': 'Advantages #2 text',
+                'url': 'Advantages_#2_url'
+            },
+            {
+                'title': 'Advantages #3',
+                'text': 'Advantages #3 text',
+                'url': 'Advantages_#3_url'
+            }
+        ]) }}
+
+    </div>
+{% endblock %}
