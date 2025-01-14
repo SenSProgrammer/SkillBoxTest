@@ -17,40 +17,37 @@ nunjucks.configure("views", {
   },
 });
 
-
 class MyTimers {
-  activeTimersArr=[];
-  stoppedTimersArr=[];
-  constructor () {}
+  activeTimersArr = [];
+  stoppedTimersArr = [];
+  constructor() {}
   addNewTimer(name) {
-    let TM= {
+    let TM = {
       start: Date.now(),
-      end: Date.now()+1000,
+      end: Date.now() + 1000,
       description: name,
       duration: 2000,
       isActive: true,
       id: nanoid(),
-    }
+    };
 
     this.activeTimersArr.push(TM);
     return TM;
   }
-  stopTimerById(id){
-    let count=0;
-    this.activeTimersArr.forEach(element => {
-      if (id==element.id)
-         {
-          element.isActive=false;
-          element.end= Date.now();
-          element.duration= this.end-this.start;
-          console.log('timer ' +id+ "stopped" );
-          console.log(element);
-          this.stoppedTimersArr.push(element);
-          this.activeTimersArr.splice(count,1);
-          count++;
-        }
-
-
+  stopTimerById(id) {
+    let count = 0;
+    this.activeTimersArr.forEach((element) => {
+      if (id == element.id) {
+        element.isActive = false;
+        element.end = Date.now();
+        element.duration = element.end - element.start;
+        console.log("timer " + id + "stopped");
+        console.log(element);
+        this.stoppedTimersArr.push(element);
+        console.log("stopped timers", this.stoppedTimersArr);
+        this.activeTimersArr.splice(count, 1);
+      }
+      count++;
     });
   }
 }
@@ -64,42 +61,34 @@ app.get("/", (req, res) => {
   res.render("index");
 });
 
-
-const TIMERS= new MyTimers();
+const TIMERS = new MyTimers();
 
 app.get("/api/timers", (req, res) => {
   res.json(TIMERS.activeTimersArr);
- // res.json(TIMERS.stoppedTimersArr);
+  // res.json(TIMERS.stoppedTimersArr);
 });
 
 app.get("/api/timers?isActive=false", (req, res) => {
-
   res.json(TIMERS.stoppedTimersArr);
 });
 app.get("/api/timers?isActive=true", (req, res) => {
   res.json(TIMERS.activeTimersArr);
 });
 
-
 //const urlencodedParser = express.urlencoded({extended: false});
 
 app.post("/api/timers/", (req, res) => {
-
-
-   // if(!req.body) return res.sendStatus(400);
-   //console.log(req.body.description);
-   let tm =TIMERS.addNewTimer(req.body.description);
-   console.log("new timer added",tm);
+  // if(!req.body) return res.sendStatus(400);
+  //console.log(req.body.description);
+  let tm = TIMERS.addNewTimer(req.body.description);
+  console.log("new timer added", tm);
   res.json(TIMERS.activeTimersArr);
   //console.log(TIMERS.activeTimersArr);
-
 });
 app.post("/api/timers/:id/stop", (req, res) => {
-  console.log(req.params.id);
+  console.log("остановка таймера:", req.params.id);
   //получить body
   TIMERS.stopTimerById(req.params.id);
-
-
 
   res.json(TIMERS.activeTimersArr);
 
@@ -107,10 +96,7 @@ app.post("/api/timers/:id/stop", (req, res) => {
   console.log(TIMERS.activeTimersArr);
   console.log("stopped timers");
   console.log(TIMERS.stoppedTimersArr);
-
 });
-
-
 
 /* You can use these initial data
 

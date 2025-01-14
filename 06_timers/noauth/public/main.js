@@ -4,11 +4,11 @@
   const notification = (config) =>
     UIkit.notification({
       pos: "top-right",
-      timeout: 2000,
+      timeout: 5000,
       ...config,
     });
 
- const alert = (message) =>
+  const alert = (message) =>
     notification({
       message,
       status: "danger",
@@ -28,17 +28,12 @@
             ? res.json()
             : null
           : res.text().then((text) => {
-              throw new  Error(text);
-
-
+              throw new Error(text);
             })
       )
-
       .catch((err) => {
-
-      }
-
-        );
+        alert(err.message);
+      });
 
   new Vue({
     el: "#app",
@@ -100,7 +95,7 @@
       this.fetchActiveTimers();
       setInterval(() => {
         this.fetchActiveTimers();
-      }, 2000);
+      }, 1000);
       this.fetchOldTimers();
     },
   });
