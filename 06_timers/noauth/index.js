@@ -63,16 +63,25 @@ app.get("/", (req, res) => {
 
 const TIMERS = new MyTimers();
 
-app.get("/api/timers", (req, res) => {
-  res.json(TIMERS.activeTimersArr);
-  // res.json(TIMERS.stoppedTimersArr);
+
+app.get("/Stopped", (req, res) =>
+
+  { res.json(TIMERS.stoppedTimersArr);
+    console.log("запрос отработан Остановленные таймеры");
+  });
+
+app.get("/Active", (req, res) =>
+
+  { res.json(TIMERS.activeTimersArr);
+    console.log("запрос отработан Активные таймеры");
 });
 
-app.get("/api/timers?isActive=false", (req, res) => {
-  res.json(TIMERS.stoppedTimersArr);
-});
-app.get("/api/timers?isActive=true", (req, res) => {
+
+
+app.get("/api/timers", (req, res) => {
   res.json(TIMERS.activeTimersArr);
+  console.log(req.originalUrl);
+  // res.json(TIMERS.stoppedTimersArr);
 });
 
 //const urlencodedParser = express.urlencoded({extended: false});
@@ -83,7 +92,7 @@ app.post("/api/timers/", (req, res) => {
   let tm = TIMERS.addNewTimer(req.body.description);
   console.log("new timer added", tm);
   res.json(TIMERS.activeTimersArr);
-  //console.log(TIMERS.activeTimersArr);
+
 });
 app.post("/api/timers/:id/stop", (req, res) => {
   console.log("остановка таймера:", req.params.id);

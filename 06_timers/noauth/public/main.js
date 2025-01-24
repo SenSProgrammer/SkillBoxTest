@@ -44,12 +44,12 @@
     },
     methods: {
       fetchActiveTimers() {
-        fetchJson("/api/timers?isActive=true").then((activeTimers) => {
+        fetchJson("/Active").then((activeTimers) => {
           this.activeTimers = activeTimers;
         });
       },
       fetchOldTimers() {
-        fetchJson("/api/timers?isActive=false").then((oldTimers) => {
+        fetchJson("/Stopped").then((oldTimers) => {
           this.oldTimers = oldTimers;
         });
       },
@@ -95,7 +95,7 @@
       this.fetchActiveTimers();
       setInterval(() => {
         this.fetchActiveTimers();
-      }, 1000);
+      }, 10000);
       this.fetchOldTimers();
     },
   });
