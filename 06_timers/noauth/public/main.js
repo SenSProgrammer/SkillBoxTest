@@ -44,12 +44,12 @@
     },
     methods: {
       fetchActiveTimers() {
-        fetchJson("/Active").then((activeTimers) => {
+        fetchJson("/api/timers?isActive=true").then((activeTimers) => {
           this.activeTimers = activeTimers;
         });
       },
       fetchOldTimers() {
-        fetchJson("/Stopped").then((oldTimers) => {
+        fetchJson("/api/timers?isActive=false").then((oldTimers) => {
           this.oldTimers = oldTimers;
         });
       },

@@ -64,25 +64,35 @@ app.get("/", (req, res) => {
 const TIMERS = new MyTimers();
 
 
-app.get("/Stopped", (req, res) =>
+app.get('/api/timers', (req, res) => {
 
-  { res.json(TIMERS.stoppedTimersArr);
-    console.log("запрос отработан Остановленные таймеры");
-  });
+  const isActive = req.query.isActive; // Получаем значение параметра isActive
 
-app.get("/Active", (req, res) =>
+  if (isActive === 'true') {
 
-  { res.json(TIMERS.activeTimersArr);
-    console.log("запрос отработан Активные таймеры");
+      // Логика для активных таймеров
+
+      res.json(TIMERS.activeTimersArr);
+      console.log("запрос отработан Активные таймеры");
+
+  } else if (isActive === 'false') {
+
+      // Логика для неактивных таймеров
+      res.json(TIMERS.stoppedTimersArr);
+      console.log("запрос отработан Остановленные таймеры");
+
+
+  } else {
+
+    res.json(TIMERS.activeTimersArr);
+    console.log("не указано состояние таймеров",req.originalUrl);
+
+  }
+
 });
 
 
 
-app.get("/api/timers", (req, res) => {
-  res.json(TIMERS.activeTimersArr);
-  console.log(req.originalUrl);
-  // res.json(TIMERS.stoppedTimersArr);
-});
 
 //const urlencodedParser = express.urlencoded({extended: false});
 
