@@ -2,7 +2,7 @@
   "name": "timers-noauth",
   "version": "1.0.0",
   "author": "",
-  "description": "Клиентский код идентичен части noauth.\r API точно так же работают по AJAX.",
+  "description": "",
   "keywords": [],
   "main": "index.js",
   "scripts": {
@@ -60,16 +60,10 @@
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.7",
     "express": "^4.17.1",
-    "firebase": "^11.3.1",
-    "firebase-admin": "^13.1.0",
     "knex": "^3.1.0",
-    "mongodb": "6.13",
+    "mongodb": "^6.13.1",
     "mysql": "^2.18.1",
     "nanoid": "^3.1.10",
-    "nunjucks": "^3.2.1",
-    "pg": "^8.13.2"
-  },
-  "directories": {
-    "test": "test"
+    "nunjucks": "^3.2.1"
   }
 }

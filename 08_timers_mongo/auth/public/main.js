@@ -95,7 +95,7 @@
       this.fetchActiveTimers();
       setInterval(() => {
         this.fetchActiveTimers();
-      }, 10000);
+      }, 100000);
       this.fetchOldTimers();
     },
   });
