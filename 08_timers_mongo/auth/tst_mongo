@@ -1,0 +1,64 @@
+
+const express = require("express");
+require("dotenv").config();
+const { nanoid } = require("nanoid");
+const app = express();
+const {MongoClient,ObjectId} = require("mongodb");
+
+const clientPromise = MongoClient.connect(process.env.DB_URI, {
+  useUnifiedTopology: true,
+ // poolSize:10,
+})
+
+app.use(async (req,res, next) =>{
+  try {
+    const client =await clientPromise;
+    req.db = client.db("users");
+    next();
+    }
+    catch (err) {
+      next(err);
+    }
+  });
+
+
+  const findUserByUsername = async (db,username) =>
+    db.collection("users").findOne({username});
+
+
+const findUserBySessionId = async (db, sessionId) => {
+
+const session = await db.collection("sessions").findOne({sessionId},{
+  projection:{ userId: 1 },
+})
+
+
+if (!session) {return;}
+
+return db.collection("users")
+.findOne({ _id:ObjectId(session.userId)});
+}
+
+
+
+const createSession = async (db, userId) => {
+const sessionId = nanoid();
+//DB.sessions[sessionId] = userId;
+console.log("открыта сессия ", sessionId, " для пользователя id ", userId);
+
+await db.collection('sessions').insertOne({sessionId, userId});
+
+return sessionId;
+
+};
+
+const deleteSession = async (sessionId) => {
+await db.collection('sessions').deleteOne({sessionId});
+
+
+};
+
+const client = clientPromise;
+
+
+setTimeout(console.log(findUserByUsername(client.db("users"),"admin")),3000);
