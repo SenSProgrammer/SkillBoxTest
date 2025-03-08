@@ -104,10 +104,10 @@ const findUserBySessionId = async (sessionId) => {
 const createSession = async (userId) => {
   const sessionId = nanoid();
   //DB.sessions[sessionId] = userId;
-   console.log("открыта сессия ", sessionId, " для пользователя id ", userId);
+  console.log("открыта сессия ", sessionId, " для пользователя id ", userId);
 
   await knex('sessions').insert({"session_id":sessionId, "user_id":userId});
- // await knex.select("session_id").from("sessions").then((rows)=>{console.log("сессия добавлена в базу активных сессий ",rows)});
+  await knex.select("session_id").from("sessions").then((rows)=>{console.log("сессия добавлена в базу активных сессий ",rows)});
   return sessionId;
 
 };
@@ -169,29 +169,28 @@ app.get("/api/timers", auth(), async (req, res) => {
 app.post("/api/timers/", bodyParser.urlencoded({ extended: false }), auth(), async (req, res) => {
   if (!req.body) return res.sendStatus(400);
   console.log("содержимое req.body ", req.body);
-  console.log("содержимое req.user ", req.user);
-  console.log("содержимое req.headers ", req.headers);
   //console.log(req.user.id);
   if (req.user) {
    // const test = JSON.parse(req.body);
-    //console.log(test.description);
-    console.log("new timer added for username", req.user.username, " body ", req.headers.descripton );
+    console.log("new timer added for username", req.user.username, " headers ", req.headers.description );
     //не смог корректно конвертировать body, читаю из header
-    const [tm] = await addNewTimerForUserId(req.user.id, req.headers.descripton);
+    const [tm] = await addNewTimerForUserId(req.user.id, req.headers.description);
     console.log("запущен таймер: ", tm);
     res.json({"timerId":tm});
   }
 
 });
-app.post("/api/timers/:id/stop", /*bodyParser.urlencoded({ extended: false }),*/ auth(), async (req, res) => {
+app.post("/api/timers/:id/stop", bodyParser.urlencoded({ extended: false }), auth(), async (req, res) => {
   //console.log(req);
   if (!req.body) return res.sendStatus(400);
   if (req.user) {
     console.log("остановка таймера:- содержимое req.params", req.params);
     const param=req.params.id;
-    stopTimerById(param);
+    const stoppedId=stopTimerById(param);
+
+
     //await getActiveTimersByUserId(req.user.id)
-    res.json({"stoppedId":param});
+    res.json({"stoppedId":stoppedId});
   }
 });
 
@@ -216,7 +215,7 @@ app.post("/signup", bodyParser.urlencoded({ extended: false }), async (req, res)
   const { username, password } = req.body;
   console.log("запись в базу данных логин, пароль" , username, " ",password);
   addSignUp(username, password);
-  res.json({signUp:"OK"});
+  res.json({});
 });
 
 app.post("/login", bodyParser.urlencoded({ extended: false }), async (req, res) => {
@@ -230,8 +229,10 @@ app.post("/login", bodyParser.urlencoded({ extended: false }), async (req, res) 
     return res.json({error: "Пользователь не найден или неправлильно указан пароль"});
     }
     const sessionId = await createSession(user.id);
-    res.send({user:user, sessionId:sessionId});
-
+    res.user=user;
+    res.sessionId= sessionId;
+    let s = {sessionId:sessionId};
+    res.send(JSON.stringify(s));
     });
 
     app.get("/logout", auth(), async (req, res) => {

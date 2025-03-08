@@ -3,8 +3,7 @@ import path from "path";
 
 //import  express from 'express';
 //const app = express();
-//import request from "request";
-import axios from "axios";
+import request from "request";
 import Table from "cli-table";
 // instantiate
 var table = new Table({
@@ -14,7 +13,9 @@ var table = new Table({
 
 //import bodyParser from "body-parser";
 import fs from "fs";
-
+console.log("!!!");
+console.log("!!!");
+console.log("!!!");
 //const user = require("./psw");
 import inquirer from "inquirer";
 //const inquirer=require("inquirer");
@@ -71,20 +72,22 @@ switch (task) {
         .then((answers) => {
           // Use user feedback for... whatever!!
           console.log("inquire send ", answers);
-          axios.post( URL +"/signup",
+          request.post(
             {
+              url: URL + "/signup",
+              form: {
                 username: answers.username,
                 password: answers.password,
-              })
-            .then((res) =>
-           {
-
+              },
+            },
+            (err, res, body) => {
+              if (err) return res.status(500).send({ message: err });
 
               //return res.send(body).json();
               console.log("User: ", answers.username, " Signed up successfully!");
-              //console.log(res);
-              console.log("ответ сервера res.data.signUp:", res.data.signUp);
-            });
+              console.log(body);
+            }
+          );
         })
         .catch((error) => {
           if (error.isTtyError) {
@@ -92,8 +95,6 @@ switch (task) {
           } else {
             // Something else went wrong
           }
-        }).catch((err) => {
-          if (err) { console.log(err);}
         });
 
       //    user.login();
@@ -118,23 +119,24 @@ switch (task) {
             //validate: requireLetterAndNumber,
           },
         ])
-      .then((answers) => {
+        .then((answers) => {
           // Use user feedback for... whatever!!
           console.log("inquire send ", answers.username);
-          axios.post( URL +"/login",
+          request.post(
             {
+              url: URL + "/login",
+              form: {
                 username: answers.username,
                 password: answers.password,
-              })
-            .then((res) =>
-              {
-              //  if (err)
-                //  return res.status(500).send({ message: err });
+              },
+            } /*bodyParser.urlencoded({ extended: false }),*/,
+            (err, res, body) => {
+              if (err) return res.status(500).send({ message: err });
 
               //return res.send(body).json();
               // console.log("User: ",answers.username, "ответ сервера: ",res);
               //const test = res.json();
-              const test = res.data;
+              const test = JSON.parse(body); //!!!!!! body - обязательно надо парсить !!!
               console.log(test.sessionId);
               console.log(sessionFileName);
 
@@ -148,12 +150,11 @@ switch (task) {
                 console.log("Файл сессии  успешно записан", data);
               });
               //fs.writeFile(sessionFileName, test.sessionId);
-            })
-            .catch((err) => { console.log(err)
-                })
-    })
+            }
+          );
+        })
         .catch((error) => {
-          if (error.isTtyError) { console.log(error);
+          if (error.isTtyError) {
             // Prompt couldn't be rendered in the current environment
           } else {
             // Something else went wrong
@@ -166,20 +167,18 @@ switch (task) {
   case "logout":
     {
       console.log(" task: ", task, " option: ", option);
-      fs.readFile(sessionFileName, (error, data) => {
-        if (error) {
-          // если возникла ошибка
-          return console.log(error);
-        }
-        const sessionId = data.toString();
-        console.log("прочитан идентификатор сессии", sessionId); // выводим считанные данные);
 
-        axios.get( URL +"/logout",
-        {headers: { "session": sessionId },
-        }
-        )
-        .then( (res) =>
-       {
+      request.get(
+        {
+          url: URL + "/logout",
+          //   form: {
+          //     username: 'admin',
+          //   password: 'pwd007',
+          //  },
+        },
+        (err, res) => {
+          if (err) return res.status(500).send({ message: err });
+
           //return res.send(body).json();
           console.log(res.body, " Logged out successfully!");
           fs.unlink(sessionFileName, (error) => {
@@ -187,12 +186,10 @@ switch (task) {
             console.log("File deleted :", sessionFileName);
           });
         }
-      ).catch((err)=>{console.log(err)});
+      );
 
       //>node index.js logout
       //Logged out successfully!
-    }
-  );
     }
     break;
   case "status":
@@ -210,13 +207,18 @@ switch (task) {
             const sessionId = data.toString();
             console.log("прочитан идентификатор сессии", sessionId); // выводим считанные данные);   // выводим считанные данные
             console.log("запрос get с параметром URL: ", "/api/timers?isActive=false");
-
-            axios.get(URL + "/api/timers?isActive=false",
+            request.get(
               {
-              headers: { session: sessionId }
-            })
-            .then( (res) => {
-                const test = res.data;
+                url: URL + "/api/timers?isActive=false",
+                headers: { session: sessionId },
+                form: {
+                  descripton: option,
+                },
+              } /*bodyParser.urlencoded({ extended: false }), - */,
+              (err, res) => {
+                if (err) return res.status(500).send({ message: err });
+
+                const test = JSON.parse(res.body); //!!!!!! body - обязательно надо парсить !!!
                 //const currentTime= Date.now();
 
                 let status = "";
@@ -237,7 +239,7 @@ switch (task) {
 
                 console.log(table.toString()); // и выведем это в табличку:
               }
-            ).catch((err)=> { console.log(err);} );
+            );
           });
 
           //ID	Task	Time
@@ -269,12 +271,19 @@ switch (task) {
             const sessionId = data.toString();
             console.log("прочитан идентификатор сессии", sessionId); // выводим считанные данные);   // выводим считанные данные
             console.log("запрос get с параметром URL: ", "/api/timers");
-            axios.get(URL + "/api/timers/" + option + "/get",
-                {
-                headers: { session: sessionId }
-              })
-              .then((res) => {
-                const test = res.data;
+            request.get(
+              {
+                url: URL + "/api/timers/" + option + "/get",
+                headers: { session: sessionId },
+                form: {
+                  timer_id: option,
+                },
+              } /*bodyParser.urlencoded({ extended: false }), - */,
+
+              (err, res) => {
+                if (err) return res.status(500).send({ message: err });
+
+                const test = JSON.parse(res.body); //!!!!!! body - обязательно надо парсить !!!
                 const currentTime = Date.now();
                 console.log("запрос статуса таймера с идентификатором: ", option);
                 let status = "";
@@ -301,7 +310,7 @@ switch (task) {
                   console.log("Таймер с идентификатором ", option, " не найден");
                 } // и выведем это в табличку:
               }
-            ).catch((err)=>{console.log(err) ;});
+            );
           });
         }
       } else {
@@ -317,15 +326,20 @@ switch (task) {
           const sessionId = data.toString();
           console.log("прочитан идентификатор сессии", sessionId); // выводим считанные данные);   // выводим считанные данные
           console.log("запрос get с параметром URL: ", "/api/timers");
-          axios.get(URL + "/api/timers",
-              {
-              headers: { session: sessionId }
-            })
-            .then((res) =>
+          request.get(
             {
-              const test = res.data;
+              url: URL + "/api/timers",
+              headers: { session: sessionId },
+              form: {
+                descripton: option,
+              },
+            } /*bodyParser.urlencoded({ extended: false }), - */,
+            (err, res) => {
+              if (err) return res.status(500).send({ message: err });
+
+              const test = JSON.parse(res.body); //!!!!!! body - обязательно надо парсить !!!
               const currentTime = Date.now();
-              //console.log(currentTime);
+              console.log(currentTime);
               let status = "";
               let duration = 0;
               test.forEach((element) => {
@@ -339,11 +353,11 @@ switch (task) {
                 }
                 duration = currentTime - parseInt(element.start);
                 table.push([element.id, element.description, status, duration]);
-                });
+              });
 
               console.log(table.toString()); // и выведем это в табличку:
             }
-          ).catch((err)=>{console.log(err) ;});
+          );
         });
 
         //Или: You have no active timers.
@@ -364,23 +378,25 @@ switch (task) {
         const sessionId = data.toString();
         console.log("прочитан идентификатор сессии", sessionId); // выводим считанные данные);   // выводим считанные данные
 
+        request.post(
+          {
+            url: URL + "/api/timers/",
+            headers: { session: sessionId, description: option },
 
-            axios.post( URL +"/api/timers/",{ descripton: option,},
-              {
-                headers: { session: sessionId,  descripton: option, },
+            form: {
+              descripton: option,
+            },
+          } /*bodyParser.urlencoded({ extended: false }), - */,
+          (err, res) => {
+            if (err) return res.status(500).send({ message: err });
 
-                })
-              .then( (res) =>
-            {
-
-
-            console.log("ответ сервера на запуск таймера: ", res.data);
-            const test = res.data;
-           // const test = JSON.parse(res.body); //!!!!!! body - обязательно надо парсить !!!
+            //return res.send(body).json();
+            //console.log("ответ сервера: ",res.body.timerId);
+            //const test = res.json();
+            const test = JSON.parse(res.body); //!!!!!! body - обязательно надо парсить !!!
             console.log("Запущен таймер : ", option, " Идентификатор таймера в базе: ", test.timerId);
           }
-        ).catch((err)=>{ console.log(err) ;
-      });
+        );
       });
       //❯ node index.js start "Some task"
       //Started timer "Some task", ID: 1.
@@ -401,26 +417,27 @@ switch (task) {
         }
         const sessionId = data.toString();
         console.log("прочитан идентификатор сессии", sessionId); // выводим считанные данные);   // выводим считанные данные
-        console.log("запрос post с параметром URL: ", "/api/timers/" + option + "/stop");
+        console.log("запрос post с параметром URL: ", "/api/timers/:" + option + "/stop");
+        request.post(
+          {
+            url: URL + "/api/timers/" + option + "/stop",
+            headers: { session: sessionId },
 
-            axios.post( URL +"/api/timers/" + option + "/stop",{},
-              {
-                headers: { session: sessionId },
-
-
-                })
-              .then( (res) =>
-            {
-
+            form: {
+              descripton: option,
+            },
+          } /*bodyParser.urlencoded({ extended: false }), - */,
+          (err, res) => {
+            if (err) return res.status(500).send({ message: err });
 
             //return res.send(body).json();
-            console.log("ответ сервера на остановку таймера: ", res.data);
-            const test = res.data;
+            console.log("ответ сервера: ", res.body);
 
-           // console.log("Попытка остановка таймера с идентификатором : ", option);
-            console.log(" Ответ сервера: Остановлен таймер ", test.stoppedId);
+            const test = JSON.parse(res.body); //!!!!!! body - обязательно надо парсить !!!
+            console.log("Попытка остановка таймера с идентификатором : ", option);
+            console.log(" Ответ сервера: ", test);
           }
-        ).catch((err)=>{ console.log(err);});
+        );
       });
 
       //❯ node index.js stop 1
