@@ -1,0 +1,52 @@
+<!doctype html>
+<p> publish </p>
+<form name="publish">
+  <input type="text" name="message" maxlength="50"/>
+  <input type="submit" value="Send"/>
+</form>
+<p> serverlive </p>
+<form name="serverlive">
+  <input type="text" name="message" maxlength="50"/>
+  <input type="submit" value="Send"/>
+</form>
+<div id="messages"></div>
+
+<script>
+let url = location.host == 'localhost' ?
+  'ws://localhost:3000/ws' : location.host == 'javascript.local' ?
+  `ws://javascript.local/article/websocket/chat/ws` : // интеграция для разработки с локальным сайтом
+  `wss://javascript.info/article/websocket/chat/ws`; // боевая интеграция с javascript.info
+
+let socket = new WebSocket(url);
+
+// отправка сообщения из формы
+document.forms.publish.onsubmit = function() {
+  let outgoingMessage = "publish: " + this.message.value ;
+
+  socket.send(outgoingMessage);
+  return false;
+};
+
+document.forms.serverlive.onsubmit = function() {
+  let outgoingMessage = "serverlive: "+this.message.value;
+
+  socket.send(outgoingMessage);
+  return false;
+};
+
+// прослушка входящих сообщений
+socket.onmessage = function(event) {
+  let incomingMessage = event.data+" "+socket.readyState;
+  showMessage(incomingMessage);
+  // alert("hi");
+};
+
+socket.onclose = event => console.log(`Closed ${event.code}`);
+
+// отображение информации в div#messages
+function showMessage(message) {
+  let messageElem = document.createElement('div');
+  messageElem.textContent = message;
+  document.getElementById('messages').prepend(messageElem);
+}
+</script>
