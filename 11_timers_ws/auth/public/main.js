@@ -1,27 +1,8 @@
 /*global UIkit, Vue */
 
 let client=null;
-let token=null;
-
-const updateProcessStatus = (text2) =>
-{
-  let elem = document.getElementById('process-status');
-  elem.innerHTML=text2;
-
-}
-
-// обработка логина и пароля, отправка на сервер
-
-
-
-const test1 = ()=> {alert("Вызов из index.njk работает");
-  const username=this.username;
-  const password=this.password;
-  // updateProcessStatus("Авторизован пользователь >"+username + ' '+ password);
-       alert("login "+username + " " +password );
-};
-
-
+let globalActiveTimers=[];
+let globalOldTimers=[];
 
 
 (() => {
@@ -37,7 +18,6 @@ const test1 = ()=> {alert("Вызов из index.njk работает");
       message,
       status: "danger",
     });
-
 
   const info = (message) =>
     notification({
@@ -60,76 +40,39 @@ const test1 = ()=> {alert("Вызов из index.njk работает");
         alert(err.message);
       });
 
-
-
-
-
   new Vue({
+
     el: "#app",
     data: {
       desc: "",
       activeTimers: [],
       oldTimers: [],
+      test:"test22",
     },
-
     methods: {
-    fetchActiveTimers() {
-     // при каждом вызове клиент высылает свой токен, а в ответ от сервера получает список таймеров
-    // if (client) {client.send("test");} else alert("socket not open");
+      setTest(tst) {this.test=tst;},
+      showTest() {alert(this.test);},
 
-      /*
-        fetchJson("/api/timers?isActive=true").then((activeTimers) => {
-          this.activeTimers = activeTimers;
+       fetchActiveTimers() {
+
+          this.activeTimers = globalActiveTimers;
+          this.oldTimers = globalOldTimers;
 
 
-
-        });
-      */
       },
       fetchOldTimers() {
-        /*
-        fetchJson("/api/timers?isActive=false").then((oldTimers) => {
-          this.oldTimers = oldTimers;
 
-        }
-
-         );
-      */},
-
-
-
-      /*
-      login() {
-        const username=this.username;
-        const password=this.password;
-       // updateProcessStatus("Авторизован пользователь >"+username + ' '+ password);
-       alert("login "+username );
-        fetchJson("/login", {
-          method: "post",
-          body: JSON.stringify({ username, password }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-        }
-      ).then( (responce )=>{
-
-
-          alert(responce.sessionId);
-          const wsProto =location.protocol ==="https:"?"wss:":"ws";
-          const client = new WebSocket(`${wsProto}//${location.host}`);
-          window.location.href = '/';
-          client.addEventListener("open", ()=>{
-             //здесь что то надо сделать с сокетом...
-              updateProcessStatus("Session Id");
-
-        })
-        })
-
+        this.oldTimers = globalOldTimers;
 
         },
-        */
 
+
+      showActiveTimers(timers) {
+      this.activeTimers = timers;
+      },
+      showOldTimers(timers) {
+               this.oldTimers = timers;
+             },
 
       createTimer() {
         const description = this.desc;
@@ -170,42 +113,51 @@ const test1 = ()=> {alert("Вызов из index.njk работает");
       },
     },
     created() {
-      this.fetchActiveTimers();
-      setInterval(() => {
-        this.fetchActiveTimers();
-      }, 1000);
-      this.fetchOldTimers();
-    },
-  });
-})();
-/*
-client.onopen = function(e) {
-  alert("[open] Соединение установлено");
-  alert("Отправляем данные на сервер");
-  client.send("Меня зовут Джон");
-};
+
+      const wsProto =location.protocol ==="https:"?"wss:":"ws";
+      client = new WebSocket(`${wsProto}//${location.host}`);
+      alert(this.test);
+
+
+
+       client.onopen = function(e) {
+          alert("[open] Соединение установлено");
+          alert("Отправляем данные на сервер");
+          client.send("Test");
+        };
 
 client.onmessage = function(event) {
 
   //alert(`[message] Данные получены с сервера: ${event.data}`);
 
-  updateProcessStatus(JSON.parse(event.data));
-
+  let data= JSON.parse(event.data);
+  alert(data.type);
+  globalActiveTimers=data.activeTimers;
+  globalOldTimers=data.stoppedTimers;
 
 };
 
 client.onclose = function(event) {
   if (event.wasClean) {
-    alert(`[close] Соединение закрыто чисто, код=${event.code} причина=${event.reason}`);
+    alert(`[close] Соединение закрыто , код=${event.code} причина=${event.reason}`);
   } else {
-    // например, сервер убил процесс или сеть недоступна
-    // обычно в этом случае event.code 1006
+
     alert('[close] Соединение прервано');
   }
 };
 
 client.onerror = function(error) {
-  alert(`[error]`);
+  alert(`[error]`, error);
   alert("непонятная ошибка");
 };
-*/
+
+     this.fetchActiveTimers();
+      setInterval(() => {
+        this.fetchActiveTimers();
+      }, 100);
+      this.fetchOldTimers();
+
+
+    },
+  });
+})();

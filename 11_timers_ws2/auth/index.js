@@ -1,10 +1,14 @@
 const cookieParser = require("cookie-parser");
+const cookie = require("cookie");
 const bodyParser = require("body-parser");
 const express = require("express");
 const nunjucks = require("nunjucks");
 require("dotenv").config();
 //const hash = require("hash");
 const { nanoid } = require("nanoid");
+const WebSocket = require("ws");
+const http = require("http");
+const activeWS = new Map();
 
 const app = express();
 
@@ -123,14 +127,14 @@ const createSession = async (userId) => {
   console.log("открыта сессия ", sessionId, " для пользователя id ", userId);
 
   await knex('sessions').insert({"session_id":sessionId, "user_id":userId});
-  await knex.select("session_id").from("sessions").then((rows)=>{console.log("сессия добавлена в базу активных сессий ",rows)});
+ // await knex.select("session_id").from("sessions").then((rows)=>{console.log("сессия добавлена в базу активных сессий ",rows)});
   return sessionId;
 
 };
 
 const deleteSession = async (sessionId) => {
   await knex('sessions').where("session_id",sessionId).del();
-  await knex.select("session_id").from("sessions").then((rows)=>{console.log("таблица активных сессий после удаления сессии", sessionId,rows)});
+ // await knex.select("session_id").from("sessions").then((rows)=>{console.log("таблица активных сессий после удаления сессии", sessionId,rows)});
 };
 
 
@@ -221,17 +225,22 @@ app.post("/api/timers/:id/stop", auth(), async (req, res) => {
   }
 });
 
-app.post("/login", bodyParser.urlencoded({ extended: false }), async (req, res) => {
-  const { username, password } = req.body;
+app.post("/login", bodyParser.urlencoded({ extended: true }), async (req, res) => {
+  const { username, password, session } = req.body;
   // запрос к базе данных - поиск записи пользователя по идентификатору
-
+  console.log("пришел запрос на авторизацию ", req.body)
   const user =await findUserByUsername(username);
   console.log("В запросе логин найден пользователь ", user)
   if (!user || user.password !== password) {
     return res.redirect("/?authError=true");
     }
     const sessionId = await createSession(user.id);
+    const token=sessionId;
     res.user=user;
+    res.body={username, password, token};
+    console.log(user);
+    console.log(res.body);
+   // res.sessionId=sessionId;
     res.cookie("sessionId", sessionId, { httpOnly: true, expires: 0 }).redirect("/");
 
 
@@ -242,7 +251,85 @@ const port = process.env.PORT || 3000;
 
 
 
+const server = http.createServer(app);
+const wss = new WebSocket.Server({clientTracking:false, noServer:true});
 
-app.listen(port, () => {
-  console.log(`  Listening on http://localhost:${port}`);
+
+ server.on("upgrade",  async (req, socket, head) => {
+      //получаем из реквеста идентификатор сессии - токен
+     console.log("Запрос upgrade от клиента с токен/sessionId ", req.cookies);
+
+      const cookies = cookie.parse(req.headers["cookie"]);
+      const token=cookies && cookies["sessionId"];
+      console.log("Запрос upgrade от клиента с токен/sessionId ", token);
+
+      //ищем пользователя в базе и его сессию если не совпадает с имеющимися в базе закрываем сессию
+      const userId = await findUserBySessionId(token);
+
+
+       if (!userId) {
+        socket.write("HTTP/1.1 401 Unautorised\r\n\r\n");
+        socket.destroy(); //закрываем сокет, если пользователь не найден
+        return;
+      }
+       // если пользователь найден - выполняем добавление в wss
+
+         req.userId=userId;
+
+         wss.handleUpgrade(req,socket,head, (ws) =>{
+          wss.emit("connection",ws,req);
+         });
+
+       //если пользователь есть - добавляем в Мап
+      activeWS.set(token, socket);
+      // высылаем однократно списки таймеров
+      await sendTimersUpdate(token);
+    });
+
+    server.on("message", (req, socket, head) => {
+      //ищем пользователя по токену
+
+      console.log("получен запрос c сообщением", req);
+
+
+    });
+
+// отправляем активные и остановленные таймеры каждую секунду всем активным клиентам
+
+const sendTimersUpdate = /*async*/ (token) => {
+
+  console.log("запрос обновления таймеров для клиента с сессией ", token);
+
+  /*
+      let userId = await findUserBySessionId(token);
+      let activeTimers = await getActiveTimersByUserId(userId);
+      let stoppedTimers = await getStoppedTimersByUserId(userId);
+
+      activeWS.get(token).send(
+        JSON.stringify({
+        type:"update_timers",
+        activeTimers,
+        stoppedTimers,})
+      );
+     */
+}
+
+/*
+
+setInterval( async ()=> {
+
+     //для каждой активной сессии
+     activeWS.forEach((token)=> {
+      sendTimersUpdate(token);
+     })
+
+} ,1000);
+
+*/
+
+
+
+server.listen(port, () => {
+  console.log(` Hi from server -  Listening on http://localhost:${port}`);
+
 });

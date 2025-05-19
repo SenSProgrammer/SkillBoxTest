@@ -171,7 +171,9 @@ app.get("/logout", auth(), async (req, res) => {
   }
   await deleteSession(req.sessionId);
   res.clearCookie("sessionId").redirect("/");
-  console.log("Сессия пользователя ", req.user, " удалена");
+  console.log("Сессия пользователя ", req.user, " удалена ", req.sessionId);
+  activeWS.delete(req.sesionId);
+  console.log("количество активных web-sockets: ",activeWS.size);
 });
 
 app.post("/signup", bodyParser.urlencoded({ extended: false }), async (req, res) => {
@@ -236,8 +238,9 @@ app.post("/login", bodyParser.urlencoded({ extended: false }), async (req, res) 
     }
     const sessionId = await createSession(user.id);
     res.user=user;
-    res.cookie("sessionId", sessionId).json({sessionId:sessionId});
-
+   // res.cookie("sessionId", sessionId).json({sessionId:sessionId});
+   // console.log(res);
+    res.cookie("sessionId", sessionId, { httpOnly: false, expires: 0 }).redirect("/");
 
     });
 
@@ -252,15 +255,15 @@ const wss = new WebSocket.Server({clientTracking:false, noServer:true});
 
  server.on("upgrade",  async (req, socket, head) => {
       //получаем из реквеста идентификатор сессии - токен
-     console.log("Запрос upgrade от клиента с токен/sessionId ", req);
-
-      const cookies = cookie.parse(req.headers["cookie"]);
-      const token=cookies && cookies["sessionId"];
-      console.log("Запрос upgrade от клиента с токен/sessionId ", token);
+     //console.log("Запрос upgrade от клиента с токен/sessionId ", req.headers);
+     const cookies = cookie.parse(req.headers["cookie"]);
+     console.log(cookies);
+     const token=cookies && cookies["sessionId"];
+     console.log("Запрос upgrade от клиента с токен/sessionId ", token);
 
       //ищем пользователя в базе и его сессию если не совпадает с имеющимися в базе закрываем сессию
       const userId = await findUserBySessionId(token);
-
+      console.log("по токену токен/sessionId ", token, "найден пользователь Id", userId );
 
        if (!userId) {
         socket.write("HTTP/1.1 401 Unautorised\r\n\r\n");
@@ -269,58 +272,61 @@ const wss = new WebSocket.Server({clientTracking:false, noServer:true});
       }
        // если пользователь найден - выполняем добавление в wss
 
-         req.userId=userId;
+         req.userId=userId.id;
 
          wss.handleUpgrade(req,socket,head, (ws) =>{
+
           wss.emit("connection",ws,req);
          });
 
-       //если пользователь есть - добавляем в Мап
-      activeWS.set(token, socket);
-      // высылаем однократно списки таймеров
-      await sendTimersUpdate(token);
     });
 
-    server.on("message", (req, socket, head) => {
-      //ищем пользователя по токену
+  const sendTimersUpdate = async (userId) => {
 
-      console.log("получен запрос c сообщением", req);
-
-
-    });
-
-// отправляем активные и остановленные таймеры каждую секунду всем активным клиентам
-
-const sendTimersUpdate = /*async*/ (token) => {
-
-  console.log("запрос обновления таймеров для клиента с сессией ", token);
-
-  /*
-      let userId = await findUserBySessionId(token);
+  console.log("запрос обновления таймеров для клиента  ", userId);
       let activeTimers = await getActiveTimersByUserId(userId);
       let stoppedTimers = await getStoppedTimersByUserId(userId);
+      //console.log("Active timers ", activeTimers);
+      //console.log("Stopped timers ", stoppedTimers);
 
-      activeWS.get(token).send(
+      activeWS.get(userId).send(
         JSON.stringify({
         type:"update_timers",
         activeTimers,
         stoppedTimers,})
       );
-     */
+
 }
 
-/*
+wss.on("connection", async (ws,req) =>{
+  //если пользователь есть - добавляем в Мап
+      const { userId } = req;
+      activeWS.set(userId, ws);
+      // высылаем однократно списки таймеров
+      sendTimersUpdate(userId);
+      console.log("установлено соединение с пользователем Id", userId,"количество активных Websockets ",activeWS.size);
+      ws.on("close", ()=>{
+       activeWS.delete(userId);
+       console.log("Закрыто соединение с пользователем Id", userId,"количество активных Websockets ",activeWS.size);
+      });
+      //ws.on("message", (message)=>{})
+   });
+
+
+// отправляем активные и остановленные таймеры каждую секунду всем активным клиентам
+
 
 setInterval( async ()=> {
 
      //для каждой активной сессии
-     activeWS.forEach((token)=> {
-      sendTimersUpdate(token);
+     activeWS.forEach((ws, userId)=> {
+      console.log(" посылаем данные в клиент с userId ", userId );
+      sendTimersUpdate(userId);
      })
 
-} ,1000);
+} ,5000);
 
-*/
+
 
 
 

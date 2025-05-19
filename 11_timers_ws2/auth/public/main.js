@@ -1,5 +1,7 @@
 /*global UIkit, Vue */
 
+
+
 (() => {
   const notification = (config) =>
     UIkit.notification({
@@ -42,16 +44,25 @@
       activeTimers: [],
       oldTimers: [],
     },
+    client:null,
     methods: {
+
       fetchActiveTimers() {
-        fetchJson("/api/timers?isActive=true").then((activeTimers) => {
-          this.activeTimers = activeTimers;
-        });
+        //
+        //fetchJson("/api/timers?isActive=true").then((activeTimers) => {
+        //  this.activeTimers = activeTimers;
+        //});
       },
       fetchOldTimers() {
-        fetchJson("/api/timers?isActive=false").then((oldTimers) => {
-          this.oldTimers = oldTimers;
-        });
+        //fetchJson("/api/timers?isActive=false").then((oldTimers) => {
+        //  this.oldTimers = oldTimers;
+        // });
+      },
+      //
+       startWS() {
+        alert("ручной запуск протокола WebSocket");
+        alert("получен токен "+window.AUTH_TOKEN);
+
       },
       createTimer() {
         const description = this.desc;
@@ -92,11 +103,18 @@
       },
     },
     created() {
+
+      alert(" created VUE started ");
+      //создаем websocket-клиент
+      //подписываемся на сообщения all_timers, active timers и обновляем списки this.activeTimers, oldTimers
+
+      /*
       this.fetchActiveTimers();
       setInterval(() => {
-        this.fetchActiveTimers();
+      this.fetchActiveTimers();
       }, 100000);
       this.fetchOldTimers();
+      */
     },
   });
 })();

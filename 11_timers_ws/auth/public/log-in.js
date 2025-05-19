@@ -23,28 +23,39 @@ const formLogin = document.getElementById('loginForm');
        // updateProcessStatus("Авторизован пользователь >"+username + ' '+ password);
        alert("login "+ JSON.stringify({ username, password }));
 
-       fetchJson("/login", {
-          method: "post",
+       fetch("/login", {
+          method: "POST",
           body: JSON.stringify({ username, password }),
           headers: {
             "Content-Type": "application/json",
           },
 
-        }
+        })
+        .then((responce )=>{
 
-      ).then( (responce )=>{
+          if (responce.ok) {
+           // const wsProto =location.protocol ==="https:"?"wss:":"ws";
+           // const client = new WebSocket(`${wsProto}//${location.host}`);
+            window.location.href = '/';
+            return responce.json();
+          }
+           else {
+            return responce.text().then((err)=>{
+              throw new Error(err);
+            });
+           }
 
-
-          alert(responce.sessionId);
-          const wsProto =location.protocol ==="https:"?"wss:":"ws";
-          const client = new WebSocket(`${wsProto}//${location.host}`);
-          window.location.href = '/';
-          client.addEventListener("open", ()=>{
+           })
+           .then(({token}) => {
+            const wsProto =location.protocol ==="https:"?"wss:":"ws";
+            const client = new WebSocket(`${wsProto}//${location.host}`);
+            client.addEventListener("open", ()=>{
+             alert("получен токен: " + token);
              //здесь что то надо сделать с сокетом...
-              updateProcessStatus("Session Id");
-
+            //  updateProcessStatus("Session Id");
+           })
+          })
         })
-        })
 
 
-  });
+

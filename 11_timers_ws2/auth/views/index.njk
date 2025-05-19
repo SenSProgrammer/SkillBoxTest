@@ -23,6 +23,8 @@
           <strong>
             User: [[ user.username ]].
             <a href="/logout">Log out</a>
+            <p> Token: [[ token ]]. </p>
+
           </strong>
         </p>
         <p>
@@ -58,11 +60,28 @@
             </li>
           </ul>
         </div>
+        <div>
+         <form v-on:submit.prevent="startWS">
+            <p>
+              <button id="start-ws" class="uk-button uk-button-primary">
+                <span uk-icon="play"></span> Start WebSocket protocol
+              </button>
+            </p>
+          </form>
+
+        </div>
       </section>
 
       <script src="https://cdn.jsdelivr.net/npm/uikit@3.5.4/dist/js/uikit.min.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/uikit@3.5.4/dist/js/uikit-icons.min.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+      <script>
+
+       window.USER_ID = "[[ user._id ]]";
+       window.AUTH_TOKEN = "[[ user.token ]]";
+
+      </script>
 
       <script src="/main.js"></script>
     [% else %]
@@ -73,12 +92,26 @@
           </div>
         [% endif %]
 
+
+
         <h2>Login</h2>
+
         <form method="POST" action="/login" enctype="application/x-www-form-urlencoded">
           <p><input type="text" name="username" class="uk-input"></p>
           <p><input type="password" name="password" class="uk-input"></p>
+          <p><input type="session" name="session" class="uk-input"></p>
           <p><button class="uk-button uk-button-primary">Login</button></p>
         </form>
+
+<!--
+         <form id="loginForm">
+          <p><input type="text" name="username" class="uk-input"></p>
+          <p><input type="password" name="password" class="uk-input"></p>
+          <p><button class="uk-button uk-button-primary">Login</button></p>
+         </form>
+         <script src="/login.js"></script>
+-->
+
 
         <h1>OR</h1>
         <h2>Signup</h2>
