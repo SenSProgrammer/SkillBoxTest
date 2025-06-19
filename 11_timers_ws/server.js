@@ -12,9 +12,7 @@ const activeWS = new Map();
 
 const app = express();
 
-console.log("Запуск в папке: ",__dirname);
-
-nunjucks.configure(__dirname+"/views", {
+nunjucks.configure("views", {
   autoescape: true,
   express: app,
   tags: {

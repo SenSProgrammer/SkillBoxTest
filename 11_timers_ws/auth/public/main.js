@@ -115,7 +115,8 @@ let globalOldTimers=[];
     created() {
 
       const wsProto =location.protocol ==="https:"?"wss:":"ws";
-      client = new WebSocket(`${wsProto}//${location.host}`);
+      const urlPort = "a4eee639eebe.hosting.myjino.ru:3000"; //location.host
+      client = new WebSocket(`${wsProto}//${urlPort}`);
       alert(this.test);
 
 
