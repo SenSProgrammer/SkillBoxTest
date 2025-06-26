@@ -114,13 +114,10 @@ let globalOldTimers=[];
     },
     created() {
 
-      let wsProto 
-      if (location.protocol ==="https:") {wsProto="wss:";}
-      else {wsProto="ws:";}
-      
+      const wsProto =location.protocol ==="https:"?"wss:":"ws";
       const urlPort = location.host;
+
       alert("URL "+urlPort);
-      
       client = new WebSocket(`${wsProto}//${urlPort}`);
       alert(this.test);
 
