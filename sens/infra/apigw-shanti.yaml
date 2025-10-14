@@ -1,0 +1,21 @@
+openapi: 3.0.0
+info:
+  title: SENS Now API
+  version: "1.0"
+paths:
+  /api/now/shanti/analyze:
+    post:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: <FUNCTION_ID_SHANTI>   # замените на id функции now-shanti-analyze
+        tag: "$latest"
+      responses:
+        "200": { description: OK }
+  /api/ai/router:
+    post:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: <FUNCTION_ID_ROUTER>   # замените на id функции ai-router
+        tag: "$latest"
+      responses:
+        "200": { description: OK }

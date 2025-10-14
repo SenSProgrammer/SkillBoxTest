@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Заметки</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.5.9/dist/css/uikit.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/fontawesome.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/solid.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/brands.min.css" />
+
+    {% block style %}{% endblock %}
+  </head>
+  <body>
+    <section class="uk-container uk-margin-top uk-margin-bottom">
+      {% block content %} {% endblock %}
+
+{% block style %}
+<style>
+  .uk-navbar-right :first-child {
+    margin-left: auto;
+  }
+</style>
+
+<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+<link rel="stylesheet" href="/bundle.css" />
+{% endblock %}
+
+{% block content %}
+
+  <nav class="uk-navbar-container" uk-navbar>
+    <div class="uk-navbar-right">
+      <div class="uk-navbar-item">
+        <img src="https://www.gravatar.com/avatar/[USERNAME HERE]?s=32&d=identicon&r=PG" class="uk-margin-right uk-border-circle" />
+        [USERNAME HERE]
+      </div>
+      <ul class="uk-navbar-nav">
+        <li><a href="/logout">Выход</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div id="main"></div>
+
+  <script src="/bundle.js"></script>
+{% endblock %}
+   </section>
+  </body>
+</html>

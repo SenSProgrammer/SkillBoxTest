@@ -1,0 +1,21 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store/
+dist/
+.DS_Store
+.env
+.env.*
+
+# Python venv (на всякий случай)
+.venv/
+__pycache__/
+
+# IDE
+.vscode/
+.idea/
+
+# Build artifacts
+*.zip
