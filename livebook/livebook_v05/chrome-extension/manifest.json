@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "LiveBook Ingest",
+  "version": "0.5",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "action": {
+    "default_popup": "src/popup.html"
+  },
+  "background": {
+    "service_worker": "src/background.js"
+  }
+}

@@ -1,0 +1,10 @@
+import React, { useState } from "react";
+export default function CommentForm({ onSubmit }: { onSubmit: (text: string) => void }) {
+  const [text, setText] = useState("");
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit(text); setText(""); }}>
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} />
+      <button type="submit">Отправить</button>
+    </form>
+  );
+}

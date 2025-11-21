@@ -1,0 +1,3 @@
+import { FastifyPluginAsync } from "fastify"; import { prisma } from "../prisma"; import { signToken, elevateAdminIfConfigured } from "../auth";
+const plugin:FastifyPluginAsync=async(app)=>{ app.post("/login", async (req,reply)=>{ const {email,name}=req.body as any; if(!email) return reply.code(400).send({error:"email required"}); const u=await prisma.user.upsert({where:{email},create:{email,name,role:"READER"},update:{name:name??undefined}}); await elevateAdminIfConfigured(u.id,email); const token=signToken({sub:u.id,email:u.email,role:u.role}); return {token,user:u}; }); };
+export default plugin;

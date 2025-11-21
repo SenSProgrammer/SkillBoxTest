@@ -1,0 +1,30 @@
+{
+  "article": {
+    "slug": "tius-anecdotes",
+    "title": "ТИУС — анекдоты и загадки",
+    "lang": "ru",
+    "meta": {
+      "tags": [
+        "тиус",
+        "анекдоты"
+      ],
+      "summary": "Клон для демонстрации"
+    }
+  },
+  "version": {
+    "note": "init",
+    "source": "chat-gpt"
+  },
+  "theses": [
+    {
+      "order": 1,
+      "text_md": "Анекдот про волка и ловушку ...",
+      "kind": "core"
+    },
+    {
+      "order": 2,
+      "text_md": "Пояснение к анекдоту ...",
+      "kind": "evidence"
+    }
+  ]
+}

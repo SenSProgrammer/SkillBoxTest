@@ -1,0 +1,6 @@
+import { FastifyPluginAsync } from "fastify"; import fastifyOauth2 from "@fastify/oauth2"; import { prisma } from "../prisma"; import { signToken, elevateAdminIfConfigured } from "../auth";
+const plugin:FastifyPluginAsync=async(app)=>{
+ await app.register(fastifyOauth2,{name:"googleOAuth2",scope:["profile","email"],credentials:{client:{id:process.env.GOOGLE_CLIENT_ID||"",secret:process.env.GOOGLE_CLIENT_SECRET||""},auth:fastifyOauth2.GOOGLE_CONFIGURATION},startRedirectPath:"/api/auth/google/login",callbackUri:process.env.GOOGLE_CALLBACK_URL||"http://localhost:8080/api/auth/google/callback"});
+ app.get("/api/auth/google/callback", async function (request, reply){ const token=await this.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request); const res=await fetch("https://www.googleapis.com/oauth2/v2/userinfo",{headers:{Authorization:`Bearer ${token.token.access_token}`}}); const p:any=await res.json(); const email=p.email; const name=p.name||p.given_name||""; const u=await prisma.user.upsert({where:{email},create:{email,name,role:"READER"},update:{name}}); await elevateAdminIfConfigured(u.id,email); const jwt=signToken({sub:u.id,email:u.email,role:u.role}); reply.redirect(302, `/oauth-success#token=${encodeURIComponent(jwt)}`); });
+};
+export default plugin;

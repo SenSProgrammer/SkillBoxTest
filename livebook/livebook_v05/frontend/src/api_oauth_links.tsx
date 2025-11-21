@@ -1,0 +1,1 @@
+import React from "react"; const API=import.meta.env.VITE_API_BASE||"http://localhost:8080"; export default function OAuthLinks(){ return (<div style={{display:'grid',gap:8}}><a href={`${API}/api/auth/google/login`} target="_blank">Войти через Google</a></div>); }

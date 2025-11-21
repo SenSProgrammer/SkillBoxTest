@@ -1,8 +1,25 @@
 export async function handler(event, context) {
   try {
-    const isForm = (event.headers?.["content-type"]||"").includes("application/x-www-form-urlencoded");
-    const bodyStr = event.body || "";
-    const params = isForm ? Object.fromEntries(new URLSearchParams(bodyStr)) : JSON.parse(bodyStr || "{}");
+    const headers = event.headers || {};
+    const ct =
+      (headers["content-type"] ||
+       headers["Content-Type"] ||
+       headers["CONTENT-TYPE"] ||
+       "").toLowerCase();
+
+    let rawBody = event.body || "";
+    if (event.isBase64Encoded) {
+      rawBody = Buffer.from(rawBody, "base64").toString("utf8");
+    }
+
+    let params = {};
+    if (ct.includes("application/x-www-form-urlencoded")) {
+      params = Object.fromEntries(new URLSearchParams(rawBody));
+    } else if (ct.includes("application/json")) {
+      try { params = JSON.parse(rawBody || "{}"); } catch { params = {}; }
+    } else {
+      try { params = Object.fromEntries(new URLSearchParams(rawBody)); } catch { params = {}; }
+    }
 
     if (params.bonus === "poem") {
       const lw = params.lw_key || "—";

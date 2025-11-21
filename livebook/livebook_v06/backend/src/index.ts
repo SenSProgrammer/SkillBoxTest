@@ -1,0 +1,18 @@
+import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import cookie from '@fastify/cookie';
+import formbody from '@fastify/formbody';
+import { extRoutes } from './routes/ext';
+import { editorRoutes } from './routes/editor';
+import { expertRoutes } from './routes/experts';
+import { articleRoutes } from './routes/articles';
+const app = Fastify({ logger: true });
+await app.register(cors, { origin: (o,cb)=>cb(null,true), credentials: true });
+await app.register(cookie, { secret: 'dev' });
+await app.register(formbody);
+app.get('/health', async ()=>({ok:true}));
+await app.register(extRoutes, { prefix: '/ext' });
+await app.register(editorRoutes, { prefix: '/editor' });
+await app.register(expertRoutes, { prefix: '/experts' });
+await app.register(articleRoutes, { prefix: '' });
+app.listen({ port: 8787, host: '0.0.0.0' }).catch(e=>{app.log.error(e);process.exit(1)});

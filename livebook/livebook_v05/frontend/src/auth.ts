@@ -1,0 +1,1 @@
+export function saveToken(t:string){localStorage.setItem("lb_token",t)} export function getToken(){return localStorage.getItem("lb_token")} export function authHeaders(){const t=getToken(); return t?{Authorization:`Bearer ${t}`}:{}}

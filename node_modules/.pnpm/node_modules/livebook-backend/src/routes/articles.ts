@@ -1,0 +1,1 @@
+import { FastifyInstance } from 'fastify'; export async function articleRoutes(app: FastifyInstance){ app.get('/articles', async()=>({ items:[{slug:'tius',title:'ТИУС (базовая)',lang:'ru'},{slug:'tius-anecdotes',title:'ТИУС — анекдоты и загадки',lang:'ru'}] })); app.get('/articles/:slug', async (req)=>({ slug:(req.params as any).slug, version:'current', content:[] })); }

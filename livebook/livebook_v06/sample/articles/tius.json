@@ -1,0 +1,35 @@
+{
+  "article": {
+    "slug": "tius",
+    "title": "ТИУС (базовая)",
+    "lang": "ru",
+    "meta": {
+      "tags": [
+        "тиус"
+      ],
+      "summary": "Базовый набросок"
+    }
+  },
+  "version": {
+    "note": "init",
+    "source": "chat-gpt"
+  },
+  "theses": [
+    {
+      "order": 1,
+      "text_md": "Определение ТИУС как ...",
+      "kind": "core"
+    },
+    {
+      "order": 2,
+      "text_md": "Аксиомы и параметры ...",
+      "kind": "core"
+    }
+  ],
+  "tables_html": [
+    "<table><tr><td>a</td><td>b</td></tr></table>"
+  ],
+  "formulas_text": [
+    "E=mc^2"
+  ]
+}

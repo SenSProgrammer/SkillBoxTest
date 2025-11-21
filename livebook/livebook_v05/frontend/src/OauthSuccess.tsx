@@ -1,0 +1,1 @@
+import React,{useEffect} from "react"; import { saveToken } from "./auth"; export default function OauthSuccess(){ useEffect(()=>{ const t=new URLSearchParams(location.hash.replace(/^#/,'')).get('token'); if(t){ saveToken(t); window.close(); } },[]); return <div>Авторизация завершена. Можно закрыть окно.</div>; }

@@ -1,0 +1,6 @@
+import { FastifyRequest, FastifyReply } from "fastify"; import jwt from "jsonwebtoken"; import { prisma } from "./prisma";
+const JWT_SECRET=process.env.JWT_SECRET||"dev-secret"; const ADM=(process.env.ADMIN_EMAILS||"").split(",").map(s=>s.trim()).filter(Boolean);
+export function signToken(p:any){return jwt.sign(p,JWT_SECRET,{expiresIn:"7d"})}
+export async function authGuard(req:FastifyRequest, reply:FastifyReply){ const h=req.headers.authorization; if(!h?.startsWith("Bearer ")) return reply.code(401).send({error:"Unauthorized"}); try{ const t=h.slice(7); const d:any=jwt.verify(t,JWT_SECRET); const u=await prisma.user.findUnique({where:{id:d.sub}}); if(!u) return reply.code(401).send({error:"Invalid user"}); (req as any).user=u; }catch(e){ return reply.code(401).send({error:"Invalid token"}) } }
+export function roleGuard(roles:("EDITOR"|"ADMIN")[]){ return async (req:FastifyRequest, reply:FastifyReply)=>{ const u=(req as any).user; if(!u) return reply.code(401).send({error:"Unauthorized"}); if(roles.includes(u.role)) return; return reply.code(403).send({error:"Forbidden"}); } }
+export async function elevateAdminIfConfigured(id:string,email:string){ if(ADM.includes(email)) await prisma.user.update({where:{id},data:{role:"ADMIN"}}) }

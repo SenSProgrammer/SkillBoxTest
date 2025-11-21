@@ -1,0 +1,1 @@
+import React from "react"; type Node={id:string;parentId?:string|null;slug:string;textHtml?:string}; export default function Tree({nodes,onSelect}:{nodes:Node[];onSelect:(slug:string)=>void}){ return <ul>{nodes.map(n=>(<li key={n.id}><button onClick={()=>onSelect(n.slug)}>{n.slug}</button></li>))}</ul>; }

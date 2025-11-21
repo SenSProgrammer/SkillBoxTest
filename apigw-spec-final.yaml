@@ -1,0 +1,40 @@
+openapi: 3.0.0
+info:
+  title: SENS Now API
+  version: "1.4"
+x-yc-apigateway-cors:
+  allowOrigins: ["*"]
+  allowMethods: ["POST","OPTIONS"]
+  allowHeaders: ["*"]
+  maxAge: 3600
+paths:
+  /api/now/shanti/analyze:
+    options:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: d4egnj5olpakd7gtftan
+        tag: "$latest"
+      responses:
+        "204": { description: CORS preflight }
+    post:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: d4ekv8h23blnq06dfgf3
+        tag: "$latest"
+      responses:
+        "200": { description: OK }
+  /api/ai/router:
+    options:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: d4egnj5olpakd7gtftan
+        tag: "$latest"
+      responses:
+        "204": { description: CORS preflight }
+    post:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: d4erinf4n6o1a6pu5v1j
+        tag: "$latest"
+      responses:
+        "200": { description: OK }

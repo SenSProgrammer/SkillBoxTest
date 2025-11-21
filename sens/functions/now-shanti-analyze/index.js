@@ -1,11 +1,41 @@
 export async function handler(event, context) {
   try {
-    const isForm = (event.headers?.["content-type"]||"").includes("application/x-www-form-urlencoded");
-    const bodyStr = event.body || "";
-    const params = isForm ? Object.fromEntries(new URLSearchParams(bodyStr)) : JSON.parse(bodyStr || "{}");
+    // 1) Нормализуем заголовки и тип контента
+    const headers = event.headers || {};
+    const ct =
+      (headers["content-type"] ||
+       headers["Content-Type"] ||
+       headers["CONTENT-TYPE"] ||
+       "").toLowerCase();
 
+    // 2) Достаём raw body и декодируем base64 при необходимости
+    let rawBody = event.body || "";
+    if (event.isBase64Encoded) {
+      rawBody = Buffer.from(rawBody, "base64").toString("utf8");
+    }
+
+    // 3) Универсальный парсинг: сначала form, потом json, иначе fallback к form
+    let params = {};
+    if (ct.includes("application/x-www-form-urlencoded")) {
+      params = Object.fromEntries(new URLSearchParams(rawBody));
+    } else if (ct.includes("application/json")) {
+      try {
+        params = JSON.parse(rawBody || "{}");
+      } catch {
+        params = {};
+      }
+    } else {
+      // Часто API GW ставит text/plain; пробуем разобрать как form
+      try {
+        params = Object.fromEntries(new URLSearchParams(rawBody));
+      } catch {
+        params = {};
+      }
+    }
+
+    // --- Дальше логика как была ---
     const num = v => isNaN(+v) ? 0 : +v;
-    const bool = v => (v === "1" || v === 1 || v === true);
+    const bool = v => (v === "1" || v === 1 || v === true || v === "true");
 
     const lw = num(params.lw_practice);
     const ev = num(params.ev_challenge);

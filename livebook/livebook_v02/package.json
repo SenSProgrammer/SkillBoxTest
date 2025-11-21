@@ -1,0 +1,19 @@
+{
+  "name": "livebook",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend",
+    "chrome-extension"
+  ],
+  "scripts": {
+    "dev": "concurrently -k \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
+    "build": "pnpm -r build",
+    "start": "pnpm --filter backend start",
+    "db:up": "docker compose -f infra/docker-compose.yml up -d",
+    "db:down": "docker compose -f infra/docker-compose.yml down -v"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

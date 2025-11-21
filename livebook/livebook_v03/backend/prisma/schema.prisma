@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String   @id @default(uuid())
+  email               String   @unique
+  name                String?
+  role                Role     @default(READER)
+  preferredLanguage   String?
+  preferredConfession String?
+  consentPublication  Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  comments            Comment[]
+  theses              Thesis[] @relation("ThesisAuthor")
+}
+
+enum Role { READER CONTRIBUTOR EDITOR ADMIN }
+
+model Book {
+  id                String   @id @default(uuid())
+  slug              String   @unique
+  title             String
+  description       String?
+  defaultLanguage   String?
+  defaultConfession String?
+  createdAt         DateTime @default(now())
+  contexts          Context[]
+  theses            Thesis[]
+}
+
+model Context {
+  id          String   @id @default(uuid())
+  book        Book     @relation(fields: [bookId], references: [id])
+  bookId      String
+  title       String
+  mathJson    Json?
+  summaryHtml String?
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+}
+
+model Thesis {
+  id          String    @id @default(uuid())
+  book        Book      @relation(fields: [bookId], references: [id])
+  bookId      String
+  context     Context   @relation(fields: [contextId], references: [id])
+  contextId   String
+  parent      Thesis?   @relation("ThesisChildren", fields: [parentId], references: [id])
+  parentId    String?
+  children    Thesis[]  @relation("ThesisChildren")
+  slug        String    @unique
+  version     Int       @default(1)
+  language    String
+  confession  String?
+  textMd      String?
+  textHtml    String?
+  status      Status    @default(DRAFT)
+  aiSource    String?
+  author      User?     @relation("ThesisAuthor", fields: [authorId], references: [id])
+  authorId    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  tags        ThesisTag[]
+  translations Translation[]
+  comments    Comment[]
+}
+
+enum Status { DRAFT PUBLISHED ARCHIVED }
+
+model ThesisTag {
+  thesis    Thesis @relation(fields: [thesisId], references: [id])
+  thesisId  String
+  tag       String
+  @@id([thesisId, tag])
+}
+
+model Translation {
+  id         String   @id @default(uuid())
+  thesis     Thesis   @relation(fields: [thesisId], references: [id])
+  thesisId   String
+  language   String
+  confession String?
+  textMd     String?
+  textHtml   String?
+  origin     Origin   @default(AI)
+  editorId   String?
+  approvedAt DateTime?
+  createdAt  DateTime @default(now())
+  @@unique([thesisId, language, confession])
+}
+
+enum Origin { HUMAN AI }
+
+model Comment {
+  id               String   @id @default(uuid())
+  thesis           Thesis   @relation(fields: [thesisId], references: [id])
+  thesisId         String
+  author           User     @relation(fields: [authorId], references: [id])
+  authorId         String
+  language         String?
+  confession       String?
+  textMd           String
+  visibility       Visibility @default(PUBLIC)
+  moderationStatus Moderation @default(PENDING)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+enum Visibility { PUBLIC PRIVATE EDITOR_ONLY }
+
+enum Moderation { PENDING APPROVED REJECTED }
